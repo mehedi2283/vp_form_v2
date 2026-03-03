@@ -6,9 +6,9 @@ interface LoadingOverlayProps {
 
 export const LoadingOverlay = ({ message }: LoadingOverlayProps) => {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-transparent">
       <div
-        className="bg-white rounded-2xl p-8 shadow-2xl max-w-sm w-full flex flex-col items-center space-y-6"
+        className="bg-white/90 backdrop-blur-md rounded-2xl p-8 shadow-[0_0_50px_rgba(0,0,0,0.15)] max-w-sm w-full flex flex-col items-center space-y-6 border border-gray-100"
       >
         <div className="relative">
           <div className="w-16 h-16 border-4 border-[#2DD4BF]/30 rounded-full"></div>

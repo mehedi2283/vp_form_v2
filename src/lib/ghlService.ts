@@ -15,8 +15,8 @@ export class HighLevel {
       formData.append("hosted", params.hosted.toString());
 
       try {
-        // The user provided a 'pit-' token which is likely a Personal Access Token (PAT).
-        // Standard GHL OAuth uses Bearer tokens.
+        // The user provided a 'pit-' token which is likely a Personal Access Token (PAT). test
+        // Standard GHL OAuth uses Bearer tokens. 
         // We will try to use the provided secret as the Authorization header.
         const response = await fetch("https://services.leadconnectorhq.com/medias/upload-file", {
             method: "POST",

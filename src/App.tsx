@@ -205,42 +205,20 @@ export default function App() {
         return responseData.data?.url || responseData.data?.fileUrl || responseData.url || responseData.fileUrl;
       };
 
-      // 3. Upload Supporting Documents First
-      setLoadingMessage("Uploading supporting documents...");
-      const mediaLinks: Record<string, string> = {};
-      const documentFields = [
-        { key: 'passportUpload', label: 'Passport', webhookKey: 'passport_upload_link' },
-        { key: 'transcriptsUpload', label: 'Transcripts', webhookKey: 'transcripts_upload_link' },
-        { key: 'englishCertUpload', label: 'EnglishCert', webhookKey: 'english_cert_upload_link' }
-      ];
-
-      for (const doc of documentFields) {
-        const fileList = data[doc.key as keyof AppFormData] as FileList | undefined;
-        if (fileList && fileList.length > 0) {
-          const file = fileList[0];
-          setLoadingMessage(`Uploading ${doc.label}...`);
-          const ext = getExt(file);
-          const customName = `${newApplicationId}-${doc.label}${ext}`;
-          const url = await uploadFile(file, customName);
-          mediaLinks[doc.webhookKey] = url;
-        }
-      }
-
-      // 4. Generate PDF (Now with access to uploaded image URLs)
+      // 3. Generate PDF (Now with access to uploaded image URLs directly from File objects)
       setLoadingMessage("Generating your application PDF...");
       // Wait a tick to ensure UI updates
       await new Promise(r => setTimeout(r, 100));
-      const pdfBlob = await generatePDF(data, newApplicationId, mediaLinks);
+      const pdfBlob = await generatePDF(data, newApplicationId);
       
-      // 5. Upload Application PDF
+      // 4. Upload Application PDF
       setLoadingMessage("Uploading application form...");
       const applicationPdfUrl = await uploadFile(
         new File([pdfBlob], `${newApplicationId}.pdf`, { type: 'application/pdf' }),
         `${newApplicationId}.pdf`
       );
-      mediaLinks['application_pdf'] = applicationPdfUrl;
 
-      // 7. Webhook
+      // 5. Webhook
       setLoadingMessage("Finalising your submission...");
       
       const webhookKeys: Record<string, string> = {
@@ -285,7 +263,8 @@ export default function App() {
 
       // Map data to webhook keys
       const webhookData: Record<string, any> = {
-        application_id: newApplicationId
+        application_id: newApplicationId,
+        application_pdf: applicationPdfUrl
       };
 
       Object.entries(data).forEach(([key, value]) => {
@@ -294,11 +273,6 @@ export default function App() {
         
         const webhookKey = webhookKeys[key] || key;
         webhookData[webhookKey] = value === undefined ? "" : value;
-      });
-
-      // Add media links
-      Object.entries(mediaLinks).forEach(([key, value]) => {
-        webhookData[key] = value;
       });
 
       const webhookUrl = (import.meta as any).env?.VITE_GHL_WEBHOOK_URL;

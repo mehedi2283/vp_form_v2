@@ -85,7 +85,7 @@ const fileToBase64 = (file: File): Promise<string> => {
   });
 };
 
-export const generatePDF = async (data: AppFormData, applicationId: string, mediaLinks: Record<string, string>): Promise<Blob> => {
+export const generatePDF = async (data: AppFormData, applicationId: string): Promise<Blob> => {
   const doc = new jsPDF();
   
   doc.setProperties({
@@ -278,18 +278,19 @@ export const generatePDF = async (data: AppFormData, applicationId: string, medi
     }
   }
 
-  // Append Uploaded Images using links
+  // Append Uploaded Images directly from File objects
   const uploadFields = [
-    { webhookKey: "passport_upload_link", label: "Passport Copy" },
-    { webhookKey: "transcripts_upload_link", label: "Academic Transcripts" },
-    { webhookKey: "english_cert_upload_link", label: "English Certificate" }
+    { key: "passportUpload", label: "Passport Copy" },
+    { key: "transcriptsUpload", label: "Academic Transcripts" },
+    { key: "englishCertUpload", label: "English Certificate" }
   ];
 
   for (const field of uploadFields) {
-    const imageUrl = mediaLinks[field.webhookKey];
-    if (imageUrl) {
+    const fileList = data[field.key as keyof AppFormData] as FileList | undefined;
+    if (fileList && fileList.length > 0) {
       try {
-        const base64 = await fetchImageAsBase64(imageUrl);
+        const file = fileList[0];
+        const base64 = await fileToBase64(file);
         if (base64) {
           doc.addPage();
           doc.setFont("helvetica", "bold");
@@ -310,7 +311,7 @@ export const generatePDF = async (data: AppFormData, applicationId: string, medi
           doc.addImage(base64, imgProps.fileType, 14, 30, imgWidth, imgHeight);
         }
       } catch (e) {
-        console.error(`Error adding ${field.label} to PDF from URL`, e);
+        console.error(`Error adding ${field.label} to PDF`, e);
       }
     }
   }
