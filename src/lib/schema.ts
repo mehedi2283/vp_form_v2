@@ -1,5 +1,14 @@
 import { z } from "zod";
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+const fileValidation = z.any()
+  .refine((files) => {
+    if (!files || files.length === 0) return true; // Optional
+    return files[0].size <= MAX_FILE_SIZE;
+  }, "Max file size is 5MB. Please reduce the image size.")
+  .optional();
+
 export const formSchema = z.object({
   // Step 1: Personal Details
   firstName: z.string().min(1, "First name is required"),
@@ -38,14 +47,9 @@ export const formSchema = z.object({
   englishTestDate: z.string().optional(),
 
   // Step 6: Supporting Documents
-  // Note: File uploads are tricky with Zod + React Hook Form directly as FileList.
-  // We'll handle validation manually or use a custom refinement if needed, 
-  // but for simplicity in this schema we'll just track if they are uploaded via boolean or string placeholders if needed,
-  // or just let the component handle the required check.
-  // For this schema, we'll assume we store the file name or a dummy string if uploaded.
-  passportUpload: z.any().optional(), // We'll handle required check in UI or refine
-  transcriptsUpload: z.any().optional(),
-  englishCertUpload: z.any().optional(),
+  passportUpload: fileValidation,
+  transcriptsUpload: fileValidation,
+  englishCertUpload: fileValidation,
   personalStatement: z.string().min(100, "Personal statement must be at least 100 characters"),
 
   // Step 7: Additional Information
