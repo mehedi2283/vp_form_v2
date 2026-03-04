@@ -287,6 +287,16 @@ export default function App() {
       });
 
       // 8. Success
+      if (typeof window !== 'undefined' && (window as any).dataLayer) {
+        (window as any).dataLayer.push({
+          event: 'form_submission_success',
+          name: `${data.firstName} ${data.surname}`,
+          email: data.emailAddress || data.email,
+          phone: data.phoneNumber,
+          application_id: newApplicationId,
+          programme: data.programme
+        });
+      }
       setIsSuccess(true);
       window.scrollTo(0, 0);
       
