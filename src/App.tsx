@@ -297,8 +297,7 @@ export default function App() {
           programme: data.programme
         });
       }
-      setIsSuccess(true);
-      window.scrollTo(0, 0);
+      window.location.href = "https://veritaspathways.co.uk/thank-you/";
       
     } catch (error) {
       console.error("Submission error:", error);
